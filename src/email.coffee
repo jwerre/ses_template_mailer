@@ -273,7 +273,7 @@ class Email
 		async.parallel [
 			(callback) =>
 				if @options.Message.Body.Html and isUrl(@options.Message.Body.Html.Data)
-					request @options.Message.Body.Html.Data, (err, response, body) ->
+					request @options.Message.Body.Html.Data, (err, response, body) =>
 						if not err and response.statusCode == 200
 							callback(null, body)
 						else
@@ -285,7 +285,7 @@ class Email
 			(callback) =>
 
 				if @options.Message.Body.Text and isUrl(@options.Message.Body.Text.Data)
-					request @options.Message.Body.Text.Data, (err, response, body) ->
+					request @options.Message.Body.Text.Data, (err, response, body) =>
 						if not err and response.statusCode == 200
 							callback(null, body)
 						else
