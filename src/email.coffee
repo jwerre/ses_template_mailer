@@ -154,6 +154,9 @@ class Email
 				ReturnPath: null
 
 		if credentials
+			credentials = _.defaults credentials,
+				region: 'us-west-2'
+
 			AWS.config.update(credentials)
 
 		@ses = new AWS.SES()
