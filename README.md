@@ -14,7 +14,7 @@ Send HTML or plain text templates through Amazon Web Services Simple Email Servi
 
 ## Config
 
-Config options are the the same as [AWS Config](aws credentials. http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-confuring.html). If you've already set up your conf globally you can leave this null
+Config options are the the same as [AWS Config](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html). If you've already set up your conf globally you can leave this null
 
 
 ## Options
@@ -86,5 +86,5 @@ Templates should be passed in as `Message.Body.Html` and or `Message.Body.Text` 
 
 Make a copy of the `test/conf.sample.coffee` and update if necessary.
 
-		cp test/conf.sample.coffee
+		cp test/conf.sample.coffee test/conf.coffee
 		mocha test/email.coffee
