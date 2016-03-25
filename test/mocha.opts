@@ -1,0 +1,6 @@
+--compilers coffee:coffee-script/register
+--require should
+--reporter spec
+--ui bdd
+--timeout 5000
+--bail
