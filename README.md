@@ -8,7 +8,7 @@ Send HTML or plain text templates through Amazon Web Services Simple Email Servi
 
 ## Usage
 
-	Email = require('../lib/email')
+	Email = require('ses-template-mailer')
 	email = new Email(options, aws_credentials);
 	email.send(function(error, result){});
 
