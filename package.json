@@ -1,6 +1,6 @@
 {
   "name": "ses-template-mailer",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Jade, EJS or Underscore.",
   "main": "index.js",
   "scripts": {
