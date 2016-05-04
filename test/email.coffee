@@ -279,3 +279,19 @@ describe "Email", ->
 			should.exist(result.ResponseMetadata)
 			should.exist(result.ResponseMetadata.RequestId)
 			done()
+
+	it "should send Underscore template from uri", (done) ->
+		opts = _.cloneDeep(options)
+
+		opts.Message.Subject.Data = 'Underscore Email Template from URI Test'
+		opts.Message.Body.Html.Data = conf.templateUris.underscore.generic
+		opts.Message.TemplateType = 'underscore'
+		# opts.Message.Body.Text.Data = conf.templateUris.underscore.text
+
+		email = new Email(opts, credentials)
+		email.send (err, result) ->
+			should.not.exist(err)
+			should.exist(result)
+			should.exist(result.ResponseMetadata)
+			should.exist(result.ResponseMetadata.RequestId)
+			done()

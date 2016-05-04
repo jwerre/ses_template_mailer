@@ -308,6 +308,7 @@ class Email
 	###
 	_getTemplateType: (url) ->
 
+
 		# check if there is an template extension of template file
 		if isUrl(url)
 
@@ -315,15 +316,13 @@ class Email
 
 			if ext and Email.TEMPLATE_LANGUGES.indexOf(ext) > -1
 				return ext
-			else
-				return Email.TEMPLATE_LANGUGES[0]
 
 		# check if templateType is defined
-		else if @options.Message.TemplateType and Email.TEMPLATE_LANGUGES.indexOf(@options.Message.TemplateType) > -1
+		if @options.Message.TemplateType and Email.TEMPLATE_LANGUGES.indexOf(@options.Message.TemplateType) > -1
 			return @options.Message.TemplateType
 
 		# check if templateType is defined
-		else if @templateType and Email.TEMPLATE_LANGUGES.indexOf(@templateType) > -1
+		if @templateType and Email.TEMPLATE_LANGUGES.indexOf(@templateType) > -1
 			return @templateType
 
 		# default to handlebars
