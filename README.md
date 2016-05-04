@@ -8,13 +8,14 @@ Send HTML or plain text templates through Amazon Web Services Simple Email Servi
 
 ## Usage
 
-	Email = require('../lib/email')
+	Email = require('ses-template-mailer')
 	email = new Email(options, aws_credentials);
+	email.send(function(error, result){});
 
 
 ## Config
 
-Config options are the the same as [AWS Config](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html). If you've already set up your conf globally you can leave this null
+Config options are the the same as [AWS Config](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html). If you've already set up your conf globally you can leave this `null`
 
 
 ## Options
@@ -31,7 +32,7 @@ The template engine to use. Must be one of the following: "handlebars", "jade", 
 
 ### Templates [String]
 
-Templates should be passed in as `Message.Body.Html` and or `Message.Body.Text` and should either be template text or a valid uri eg: `https://mybucket.s3.amazonaws.com/template.handlebars`. Using an extension name like "handlebars", "jade", "ejs" or "underscore" will overwrite `TemplateType`. This can also be set with `email.template` before calling send.
+Templates should be passed in as `Message.Body.Html` and/or `Message.Body.Text` and should either be template text or a valid uri eg: `https://mybucket.s3.amazonaws.com/template.handlebars`. Using an extension name like "handlebars", "jade", "ejs" or "underscore" will overwrite `TemplateType`. If `Message.Body.Text` is `null` then a plain text email will be generated from the HTML. Templates can also be set with `email.template` before calling send. *Note: Since Jade cannot parse pain text emails text is automatically parsed from html, be sure and nullify text property (`Message.Body.Text=null`) if you're using Jade.*
 
 
 ### Example:
@@ -86,5 +87,5 @@ Templates should be passed in as `Message.Body.Html` and or `Message.Body.Text` 
 
 Make a copy of the `test/conf.sample.coffee` and update if necessary.
 
-		cp test/conf.sample.coffee test/conf.coffee
-		mocha test/email.coffee
+	cp test/conf.sample.coffee test/conf.coffee // update conf.coffee
+	mocha test/email.coffee
