@@ -1,6 +1,6 @@
 # AWS Simple Email Service (SES) Template Mailer
 
-Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Jade, EJS or Underscore.
+Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Pug, EJS or Underscore.
 
 ## Install
 
@@ -28,11 +28,11 @@ The data to parse the template with. This can also be set with `email.templateDa
 
 ### Message.TemplateType [String]
 
-The template engine to use. Must be one of the following: "handlebars", "jade", "ejs", "underscore". Handlebars is the default. This can also be set with `email.templateType` before calling send.
+The template engine to use. Must be one of the following: "handlebars", "pug", "ejs", "underscore". Handlebars is the default. This can also be set with `email.templateType` before calling send.
 
 ### Templates [String]
 
-Templates should be passed in as `Message.Body.Html` and/or `Message.Body.Text` and should either be template text or a valid uri eg: `https://mybucket.s3.amazonaws.com/template.handlebars`. Using an extension name like "handlebars", "jade", "ejs" or "underscore" will overwrite `TemplateType`. If `Message.Body.Text` is `null` then a plain text email will be generated from the HTML. Templates can also be set with `email.template` before calling send. *Note: Since Jade cannot parse pain text emails text is automatically parsed from html, be sure and nullify text property (`Message.Body.Text=null`) if you're using Jade.*
+Templates should be passed in as `Message.Body.Html` and/or `Message.Body.Text` and should either be template text or a valid uri eg: `https://mybucket.s3.amazonaws.com/template.handlebars`. Using an extension name like "handlebars", "pug", "ejs" or "underscore" will overwrite `TemplateType`. If `Message.Body.Text` is `null` then a plain text email will be generated from the HTML. Templates can also be set with `email.template` before calling send. *Note: Since Pug cannot parse pain text emails text is automatically parsed from html, be sure and nullify text property (`Message.Body.Text=null`) if you're using Pug.*
 
 
 ### Example:
@@ -66,7 +66,7 @@ Templates should be passed in as `Message.Body.Html` and/or `Message.Body.Text` 
 		}, {
 			accessKeyId: 'my_aws_access_key',
 			secretAccessKey: 'my_aws_secret_key',
-			region: 'us-west-1'
+			region: 'us-west-2'
 		}
 
 	);
@@ -76,7 +76,7 @@ Templates should be passed in as `Message.Body.Html` and/or `Message.Body.Text` 
 	// email.templateData = {name:'Peter', more: 'https://en.wikipedia.org/wiki/Peter_Peter_Pumpkin_Eater'}
 	// email.templateType = 'handlebars'
 
-	email.send(params, function(err, data) {
+	email.send(function(err, data) {
 		if (err)
 			console.log(err, err.stack); // error
 		else

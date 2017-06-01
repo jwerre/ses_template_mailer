@@ -5,12 +5,12 @@ module.exports =
 	credentials:
 		accessKeyId: 'my_aws_access_key'
 		secretAccessKey: 'my_aws_secret_key'
-		region: 'us-west-1'
+		region: 'us-west-2'
 
 	from: 'success@simulator.amazonses.com'
 
 	to: [
-		'ASW Simulator <success@simulator.amazonses.com>'
+		'AWS Simulator <success@simulator.amazonses.com>'
 	]
 
 	templateData:
@@ -21,9 +21,9 @@ module.exports =
 		handlbars:
 			text: 'https://gist.githubusercontent.com/jwerre/00b42eb76a7aee6c6ddf/raw/dbfe65c1c399323544689c85bf65128d4440cb2b/text_email_template.handlebars'
 			html: 'https://gist.githubusercontent.com/jwerre/24e327073cc2eed8aaaf/raw/b410e66cf52fc1b96f1d1fe9daa92f27c48dcd53/html_email_template.handlbars'
-		jade:
-			text: 'Can not send plain text emails with Jade—text email will be parsed from HTML.'
-			html: 'https://gist.githubusercontent.com/jwerre/d3362650657cde6e19a8/raw/36ce36377898624591aecd32f3582d0cec511098/test_email_template.jade'
+		pug:
+			text: 'Can not send plain text emails with Pug. Text email will be parsed from HTML.'
+			html: 'https://gist.githubusercontent.com/jwerre/d3362650657cde6e19a8/raw/36ce36377898624591aecd32f3582d0cec511098/test_email_template.pug'
 		ejs:
 			text: 'https://gist.githubusercontent.com/jwerre/9bf4a6f8b17183e0f5cf/raw/47087c3125a78acff72b2c195ed15096866dabd9/text_email_template.ejs'
 			html: 'https://gist.githubusercontent.com/jwerre/c28ab484c4c58e0feb6b/raw/66df854a462afb81e00e8e47d464356bd00fbf74/html_email_template.ejs'
@@ -51,10 +51,10 @@ module.exports =
 					<p>You did it!</p>
 				{{/if}}
 			"""
-		jade:
-			text: "Can not send plain text emails with Jade—text email will be parsed from HTML."
+		pug:
+			text: "Can not send plain text emails with Pug—text email will be parsed from HTML."
 			html: """
-				h1 You've just sent a Jade email template
+				h1 You've just sent a Pug email template
 				p this email was sent to
 					a(href="mailto:"+email)= email
 				if amazing

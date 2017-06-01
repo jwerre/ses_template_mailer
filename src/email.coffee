@@ -3,7 +3,7 @@ path = require('path')
 AWS = require('aws-sdk')
 _ = require('lodash')
 Handlebars = require("handlebars")
-jade = require("jade")
+pug = require("pug")
 ejs = require("ejs")
 isUrl = require('is-url')
 request = require('request')
@@ -64,7 +64,7 @@ class Email
 
 	@TEMPLATE_LANGUGES: [
 		"handlebars" # default
-		"jade"
+		"pug"
 		"ejs"
 		"underscore"
 	]
@@ -90,7 +90,7 @@ class Email
 	###*
 	Location of a template file or a template string.
 	Template files can have the following with extensions
-	.jade, .handlebars, .underscore, or .ejs will determine which
+	.pug, .handlebars, .underscore, or .ejs will determine which
 	template language to use. If a sting is used then Handlebars will be
 	used by default unless TemplateType is defined.
 
@@ -121,7 +121,7 @@ class Email
 
 	###*
 	The type of template language to use, either:
-	handlebars, jade, ejs, or underscore. "handlebars" is used by default
+	handlebars, pug, ejs, or underscore. "handlebars" is used by default
 	unless otherwise specified by extension used by the template name.
 
 	@property template
@@ -214,8 +214,8 @@ class Email
 		@options.Message.TemplateType = @_getTemplateType(@options.Message.Body.Html.Data)
 
 		if @options.Message.Body.Text and @options.Message.Body.Text.Data and @options.Message.Body.Text.Data.length
-			if @options.Message.TemplateType is 'jade' or @templateType is 'jade'
-				return callback(new TypeError('Plain text emails cannot be compiled with Jade. Set "Message.Body.Text" to "null" to allow the text email to be generated from the HTML.'))
+			if @options.Message.TemplateType is 'pug' or @templateType is 'pug'
+				return callback(new TypeError('Plain text emails cannot be compiled with Pug. Set "Message.Body.Text" to "null" to allow the text email to be generated from the HTML.'))
 
 		if @options.Message.Body.Html and @options.Message.Body.Html.Data and ( not @options.Message.Body.Text or not @options.Message.Body.Text.Data)
 			@options.Message.Body.Text =
@@ -242,7 +242,7 @@ class Email
 							callback(null, @options.Message.Body.Html.Data)
 
 					(callback) =>
-						if result.text# and @options.Message.TemplateType isnt 'jade'
+						if result.text# and @options.Message.TemplateType isnt 'pug'
 							templateMethod result.text, @options.Message.TemplateData, (err, text) ->
 								callback(err, text)
 						else
@@ -350,17 +350,17 @@ class Email
 
 
 	###*
-	Parses a jade email template.
+	Parses a pug email template.
 
-	@method _prepJadeTemplate
+	@method _prepPugTemplate
 	@param {String} template the template file content
 	@param {Function} callback callback function
 	@async
 	###
-	_prepJadeTemplate: (template, data, callback) ->
+	_prepPugTemplate: (template, data, callback) ->
 
 		try
-			templ = jade.compile(template)
+			templ = pug.compile(template)
 			html = templ(data)
 		catch err
 			return callback(err)

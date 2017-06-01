@@ -1,7 +1,7 @@
 {
   "name": "ses-template-mailer",
   "version": "1.0.7",
-  "description": "Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Jade, EJS or Underscore.",
+  "description": "Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Pug, EJS or Underscore.",
   "main": "index.js",
   "scripts": {
     "test": "test"
@@ -20,6 +20,7 @@
     "aws",
     "template",
     "tempting",
+    "pug",
     "jade",
     "ejs",
     "underscore",
@@ -34,9 +35,9 @@
     "handlebars": "^4.0.5",
     "html-to-text": "^2.0.0",
     "is-url": "^1.2.1",
-    "jade": "^1.11.0",
     "lodash": "^4.6.1",
     "neo-async": "^1.8.0",
+    "pug": "^2.0.0-rc.1",
     "request": "^2.69.0"
   },
   "devDependencies": {
