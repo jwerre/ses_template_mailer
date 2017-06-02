@@ -6,9 +6,9 @@ Email = require("../src/email")
 
 try
 	conf = require('./conf')
+	
 catch e
 	throw new Error("Must have conf.coffee in test directory, run `cp test/conf.sample.coffee conf.coffee`")
-
 
 
 describe "Email", ->
@@ -171,7 +171,7 @@ describe "Email", ->
 
 
 	# PUG
-	describe "Pug", ->
+	describe "pug", ->
 
 		it "should not send Pug template since pug cannot parse plain text", (done) ->
 			opts = _.cloneDeep(options)
@@ -217,87 +217,84 @@ describe "Email", ->
 
 
 	#EJS
-	describe 'EJS', ->
+	describe 'EJS'
+	it "should send EJS template", (done) ->
+		opts = _.cloneDeep(options)
 
-		it "should send EJS template", (done) ->
-			opts = _.cloneDeep(options)
+		opts.Message.Subject.Data = 'EJS Email Template Test'
+		opts.Message.TemplateType = 'ejs'
+		opts.Message.Body.Html.Data = conf.templates.ejs.html
+		opts.Message.Body.Text.Data = conf.templates.ejs.text
 
-			opts.Message.Subject.Data = 'EJS Email Template Test'
-			opts.Message.TemplateType = 'ejs'
-			opts.Message.Body.Html.Data = conf.templates.ejs.html
-			opts.Message.Body.Text.Data = conf.templates.ejs.text
+		email = new Email(opts, credentials)
+		email.send (err, result) ->
+			should.not.exist(err)
+			should.exist(result)
+			should.exist(result.ResponseMetadata)
+			should.exist(result.ResponseMetadata.RequestId)
+			done()
 
-			email = new Email(opts, credentials)
-			email.send (err, result) ->
-				should.not.exist(err)
-				should.exist(result)
-				should.exist(result.ResponseMetadata)
-				should.exist(result.ResponseMetadata.RequestId)
-				done()
+	it "should send EJS template from uri", (done) ->
+		opts = _.cloneDeep(options)
 
-		it "should send EJS template from uri", (done) ->
-			opts = _.cloneDeep(options)
+		opts.Message.Subject.Data = 'EJS Email Template from URI Test'
+		opts.Message.Body.Html.Data = conf.templateUris.ejs.html
+		opts.Message.Body.Text.Data = conf.templateUris.ejs.text
 
-			opts.Message.Subject.Data = 'EJS Email Template from URI Test'
-			opts.Message.Body.Html.Data = conf.templateUris.ejs.html
-			opts.Message.Body.Text.Data = conf.templateUris.ejs.text
-
-			email = new Email(opts, credentials)
-			email.send (err, result) ->
-				should.not.exist(err)
-				should.exist(result)
-				should.exist(result.ResponseMetadata)
-				should.exist(result.ResponseMetadata.RequestId)
-				done()
+		email = new Email(opts, credentials)
+		email.send (err, result) ->
+			should.not.exist(err)
+			should.exist(result)
+			should.exist(result.ResponseMetadata)
+			should.exist(result.ResponseMetadata.RequestId)
+			done()
 
 
 
 	#UNDERSCORE
-	describe 'Underscore', ->
+	it "should send Underscore template", (done) ->
+		opts = _.cloneDeep(options)
 
-		it "should send Underscore template", (done) ->
-			opts = _.cloneDeep(options)
+		opts.Message.Subject.Data = 'Underscore Email Template Test'
+		opts.Message.TemplateType = 'underscore'
+		opts.Message.Body.Html.Data = conf.templates.underscore.html
+		opts.Message.Body.Text.Data = conf.templates.underscore.text
 
-			opts.Message.Subject.Data = 'Underscore Email Template Test'
-			opts.Message.TemplateType = 'underscore'
-			opts.Message.Body.Html.Data = conf.templates.underscore.html
-			opts.Message.Body.Text.Data = conf.templates.underscore.text
+		email = new Email(opts, credentials)
+		email.send (err, result) ->
+			should.not.exist(err)
+			should.exist(result)
+			should.exist(result.ResponseMetadata)
+			should.exist(result.ResponseMetadata.RequestId)
+			done()
 
-			email = new Email(opts, credentials)
-			email.send (err, result) ->
-				should.not.exist(err)
-				should.exist(result)
-				should.exist(result.ResponseMetadata)
-				should.exist(result.ResponseMetadata.RequestId)
-				done()
+	it "should send Underscore template from uri", (done) ->
+		opts = _.cloneDeep(options)
 
-		it "should send Underscore template from uri", (done) ->
-			opts = _.cloneDeep(options)
+		opts.Message.Subject.Data = 'Underscore Email Template from URI Test'
+		opts.Message.Body.Html.Data = conf.templateUris.underscore.html
+		opts.Message.Body.Text.Data = conf.templateUris.underscore.text
 
-			opts.Message.Subject.Data = 'Underscore Email Template from URI Test'
-			opts.Message.Body.Html.Data = conf.templateUris.underscore.html
-			opts.Message.Body.Text.Data = conf.templateUris.underscore.text
+		email = new Email(opts, credentials)
+		email.send (err, result) ->
+			should.not.exist(err)
+			should.exist(result)
+			should.exist(result.ResponseMetadata)
+			should.exist(result.ResponseMetadata.RequestId)
+			done()
 
-			email = new Email(opts, credentials)
-			email.send (err, result) ->
-				should.not.exist(err)
-				should.exist(result)
-				should.exist(result.ResponseMetadata)
-				should.exist(result.ResponseMetadata.RequestId)
-				done()
+	it "should send Underscore template from uri", (done) ->
+		opts = _.cloneDeep(options)
 
-		it "should send Underscore template from uri", (done) ->
-			opts = _.cloneDeep(options)
+		opts.Message.Subject.Data = 'Underscore Email Template from URI Test'
+		opts.Message.Body.Html.Data = conf.templateUris.underscore.generic
+		opts.Message.TemplateType = 'underscore'
+		# opts.Message.Body.Text.Data = conf.templateUris.underscore.text
 
-			opts.Message.Subject.Data = 'Underscore Email Template from URI Test'
-			opts.Message.Body.Html.Data = conf.templateUris.underscore.generic
-			opts.Message.TemplateType = 'underscore'
-			# opts.Message.Body.Text.Data = conf.templateUris.underscore.text
-
-			email = new Email(opts, credentials)
-			email.send (err, result) ->
-				should.not.exist(err)
-				should.exist(result)
-				should.exist(result.ResponseMetadata)
-				should.exist(result.ResponseMetadata.RequestId)
-				done()
+		email = new Email(opts, credentials)
+		email.send (err, result) ->
+			should.not.exist(err)
+			should.exist(result)
+			should.exist(result.ResponseMetadata)
+			should.exist(result.ResponseMetadata.RequestId)
+			done()
