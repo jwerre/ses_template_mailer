@@ -7,7 +7,7 @@ module.exports =
 		secretAccessKey: 'my_aws_secret_key'
 		region: 'us-west-2'
 
-	from: 'success@simulator.amazonses.com'
+	from: 'AWS Simulator success@simulator.amazonses.com'
 
 	to: [
 		'AWS Simulator <success@simulator.amazonses.com>'
