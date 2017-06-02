@@ -4,7 +4,9 @@
   "description": "Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Pug, EJS or Underscore.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/email.coffee"
+    "test": "./node_modules/.bin/mocha test/email.coffee",
+    "start": "coffee --bare --output lib --compile src",
+    "prepublish": "coffee --bare --output lib --compile src"
   },
   "repository": {
     "type": "git",
@@ -42,7 +44,7 @@
   },
   "devDependencies": {
     "coffee-script": "^1.10.0",
-    "should": "^8.3.0",
-    "mocha": "3.4.2"
+    "mocha": "3.4.2",
+    "should": "^11.2.1"
   }
 }
