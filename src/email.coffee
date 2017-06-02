@@ -7,7 +7,7 @@ pug = require("pug")
 ejs = require("ejs")
 isUrl = require('is-url')
 request = require('request')
-async = require('neo-async')
+async = require('async')
 htmlToText = require('html-to-text')
 
 ###*

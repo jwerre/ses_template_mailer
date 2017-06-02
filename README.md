@@ -1,6 +1,6 @@
 # AWS Simple Email Service (SES) Template Mailer
 
-Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Pug, EJS or Underscore.
+Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Pug, EJS or Underscore. This is essentially a wrapper for [ses.sendEmail](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SES.html#sendEmail-property).
 
 ## Install
 
@@ -32,7 +32,7 @@ The template engine to use. Must be one of the following: "handlebars", "pug", "
 
 ### Templates [String]
 
-Templates should be passed in as `Message.Body.Html` and/or `Message.Body.Text` and should either be template text or a valid uri eg: `https://mybucket.s3.amazonaws.com/template.handlebars`. Using an extension name like "handlebars", "pug", "ejs" or "underscore" will overwrite `TemplateType`. If `Message.Body.Text` is `null` then a plain text email will be generated from the HTML. Templates can also be set with `email.template` before calling send. *Note: Since Pug cannot parse pain text emails text is automatically parsed from html, be sure and nullify text property (`Message.Body.Text=null`) if you're using Pug.*
+Templates should be passed in as `Message.Body.Html` and/or `Message.Body.Text` and should either be template text or a valid uri eg: `https://mybucket.s3.amazonaws.com/template.handlebars`. Using an extension name like "handlebars", "pug", "ejs" or "underscore" will overwrite `TemplateType`. If `Message.Body.Text` is `null` then a plain text email will be generated from the HTML. Templates can also be set with `email.template` before calling send. *Note: Since Pug cannot parse plain text emails text is automatically parsed from html, be sure and nullify text property (`Message.Body.Text=null`) if you're using Pug.*
 
 
 ### Example:
