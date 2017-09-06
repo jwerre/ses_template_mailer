@@ -1,6 +1,6 @@
 {
   "name": "ses-template-mailer",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Pug, EJS or Underscore.",
   "main": "index.js",
   "scripts": {
