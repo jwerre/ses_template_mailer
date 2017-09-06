@@ -1,5 +1,5 @@
+EventEmitter = require('events')
 path = require('path')
-
 AWS = require('aws-sdk')
 _ = require('lodash')
 Handlebars = require("handlebars")
@@ -16,7 +16,7 @@ Template Engine for Amazon Web Services Simple Email Service (SES).
 
 @class Email
 @constructor
-@param Object options SES.sendEmail options. http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SES.html#sendEmail-property
+@param Object data SES.sendEmail data. http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SES.html#sendEmail-property
 @param Object credentials aws credentials. http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html
 @example
 	Email = require('../lib/email')
@@ -60,7 +60,14 @@ Template Engine for Amazon Web Services Simple Email Service (SES).
 
 
 ###
-class Email
+class Email extends EventEmitter
+	
+	
+	@COMPLETE_EVENT: 'complete'
+	
+	@SEND_EVENT: 'send'
+	
+	@ERROR_EVENT: 'error'
 
 	@TEMPLATE_LANGUGES: [
 		"handlebars" # default
@@ -70,28 +77,21 @@ class Email
 	]
 
 	###*
-	SES instance
+	SES rate limit. The amount of emails to send per second
 
-	@property ses
+	@property rateLimit
 	@type AWS.SES
-	@default null
-	###
-	ses: null
+	@default 90
+	###	
+	rateLimit: 90
+
 
 	###*
-	Config options for SES
-
-	@property options
-	@type Object
-	@default null
-	###
-	options: null
-
-	###*
-	Location of a template file or a template string.
+	Set a global template for multiple recipients.
+	This should be a location of a template file or a template string.
 	Template files can have the following with extensions
-	.pug, .handlebars, .underscore, or .ejs will determine which
-	template language to use. If a sting is used then Handlebars will be
+	.pug, .handlebars, .underscore, or .ejs which will determine the
+	template language used. If a string is used then Handlebars will be
 	used by default unless TemplateType is defined.
 
 	@property template
@@ -130,10 +130,24 @@ class Email
 	###
 	templateType: null
 
+	###*
+	Config data for SES
 
-	constructor: (opts, credentials) ->
+	@property data
+	@type Object
+	@default null
+	###
+	data: null
 
-		@options = _.defaultsDeep opts,
+	_ses: null
+
+	constructor: (data, credentials) ->
+		
+		if not _.isArray(data)
+			data = [data]
+
+		@data = data.map (item) ->
+			_.defaultsDeep item,
 				Destination:
 					BccAddresses: null
 					CcAddresses: null
@@ -159,107 +173,196 @@ class Email
 
 			AWS.config.update(credentials)
 
-		@ses = new AWS.SES()
+		@_ses = new AWS.SES()
 
-
+	
 	###*
 	Send an email.
 	@method send
 	@async
 	@param {Function} callback callback function
 	###
-	send: ( callback ) ->
+	send: (callback) ->
+		
+		if not @data or not @data.length
+			err = new Error("data is required")
+			
+			if _.isFunction(callback)
+				return callback(err)
+			else
+				return @emit(Email.ERROR_EVENT, err)
 
-		if not @options
-			return callback(new TypeError("options are required"))
+		
+		if @data.length > 1
+			
+			errCache = []
+			resultCache = []
+			
+			cargo = async.cargo (tasks, done) =>
+					
+					# delay 1 second
+					setTimeout  =>
 
-		if not @options.Destination or not @options.Destination.ToAddresses
-			return callback(new TypeError("Destination is required"))
+						async.each tasks, (item, callback) =>
+							
+								@_dispatch item, (err, result) =>
+									
+									if err
+										errCache.push(err)
+										@emit(Email.ERROR_EVENT, err)
+										
+									else
+										resultCache.push(result)
+										@emit(Email.SEND_EVENT, result)
 
-		if not @options.Source
-			return callback(new TypeError("Source is required"))
+									callback(null, true)
 
-		if not @options.Message
-			return callback(new TypeError("Message is required"))
+							, done
 
-		if not @options.Message.Subject or not @options.Message.Subject.Data or not @options.Message.Subject.Data.length
-			return callback(new TypeError("Message.Subject is required"))
+					, 1000
 
-		if not @options.Message.Body
-			return callback(new TypeError("Message.Body is required"))
+				, @rateLimit
+			
+			cargo.drain = =>
+				
+				if errCache.length
+					err = errCache
+					
+				if _.isFunction(callback)
+					callback(err, resultCache, @data)
 
+				else
+					@emit(Email.COMPLETE_EVENT, err, resultCache, @data)
+			
+			cargo.push(@data)
 
-		@_prepTemplate (err) =>
-			# console.log require('util').inspect @options, {depth:10, colors:true}
-			return callback(err) if err
-			delete @options.Message.TemplateType
-			delete @options.Message.TemplateData
-			@ses.sendEmail(@options, callback)
+		
+		else
+			@_dispatch @data[0], (err, result) =>
+				
+				if _.isFunction(callback)
+					callback(err, result, @data[0])
+					
+				else
 
+					if err
+						@emit(Email.ERROR_EVENT, err)
+					else
+						@emit(Email.SEND_EVENT, result, @data[0])
 
-	###*
-	Parses template string or uri.
+					@emit(Email.COMPLETE_EVENT)
 
-	@method _prepTemplate
-	@param {Function} callback callback function
-	@async
-	###
-	_prepTemplate: (callback) ->
+		
+
+	_dispatch: ( data, callback ) ->
+
+		if not data
+			return callback(new Error("data is required"))
+
+		if not data.Destination or not data.Destination.ToAddresses
+			return callback(new Error("Destination is required"))
+
+		if not data.Source
+			return callback(new Error("Source is required"))
+
+		if not data.Message
+			return callback(new Error("Message is required"))
+
+		if not data.Message.Subject or not data.Message.Subject.Data or not data.Message.Subject.Data.length
+			return callback(new Error("Message.Subject is required"))
+		
+		if not data.Message.Body
+			return callback(new Error("Message.Body is required"))
+
+		# console.log require('util').inspect data, {depth:10, colors:true}
+		@_prepTemplate data, (err, result) =>
+			# console.log require('util').inspect result, {depth:10, colors:true}
+			if err
+				return callback(err)
+			
+			if not result
+				callback(new Error('Unable to parse options'))
+
+			delete result.Message.TemplateType
+			delete result.Message.TemplateData
+			@_ses.sendEmail(result, callback)
+			
+		
+	
+	_prepTemplate: (data, callback) ->
+		
+		# console.log "_prepTemplate"
+		# console.log require('util').inspect data, {depth:10, colors:true}
 
 		if @template
-			@options.Message.Body.Html.Data = @template
+			data.Message.Body.Html.Data = @template
 
 
-		@options.Message.TemplateData = @templateData if @templateData
-		@options.Message.TemplateType = @_getTemplateType(@options.Message.Body.Html.Data)
+		if @templateData
+			data.Message.TemplateData = @templateData
+		
+		# get the template type
+		type = _.get(data, ['Message', 'TemplateType']) or _.get(data, ['Message','Body','Html','Data'])
+		# set which kind of template to use
+		data.Message.TemplateType = @_getTemplateType(type)
+		
+		# make sure there is now plain text emails if pug is the template type
+		if 	data.Message.Body.Text and 
+			data.Message.Body.Text.Data and 
+			data.Message.Body.Text.Data.length and
+			data.Message.TemplateType is 'pug'
+				return callback(new Error('Plain text emails cannot be compiled with Pug. Set "Message.Body.Text" to "null" to allow the text email to be generated from the HTML.'))
 
-		if @options.Message.Body.Text and @options.Message.Body.Text.Data and @options.Message.Body.Text.Data.length
-			if @options.Message.TemplateType is 'pug' or @templateType is 'pug'
-				return callback(new TypeError('Plain text emails cannot be compiled with Pug. Set "Message.Body.Text" to "null" to allow the text email to be generated from the HTML.'))
-
-		if @options.Message.Body.Html and @options.Message.Body.Html.Data and ( not @options.Message.Body.Text or not @options.Message.Body.Text.Data)
-			@options.Message.Body.Text =
-				Data: @options.Message.Body.Html.Data
-
-
-		templateMethod = @["_prep#{@options.Message.TemplateType.charAt(0).toUpperCase() + @options.Message.TemplateType.slice(1)}Template"]
+		# if plain text email isn't set set html
+		if 	data.Message.Body.Html and 
+			data.Message.Body.Html.Data and 
+			not data.Message.Body.Text or 
+			not data.Message.Body.Text.Data
+				data.Message.Body.Text =
+					Data: data.Message.Body.Html.Data
+		
+		# create the template function
+		if data.Message and data.Message.TemplateType
+			templateMethod = @["_prep#{data.Message.TemplateType.charAt(0).toUpperCase() + data.Message.TemplateType.slice(1)}Template"]
 
 		if _.isFunction(templateMethod)
 
-			@_getTemplateString (err, result) =>
+			
+			@_getTemplateString data.Message.Body.Html.Data, data.Message.Body.Text.Data, (err, result) =>
+				
 				return callback(err) if err
 
 				# just send the email if there is no template data
-				# return callback() if not @options.Message.TemplateData
-
+				# return callback() if not data.Message.TemplateData
 
 				async.parallel [
 					(callback) =>
 						if result.html
-							templateMethod result.html, @options.Message.TemplateData, (err, html) ->
+							templateMethod result.html, data.Message.TemplateData, (err, html) ->
 								callback(err, html)
 						else
-							callback(null, @options.Message.Body.Html.Data)
+							callback(null, data.Message.Body.Html.Data)
 
 					(callback) =>
-						if result.text# and @options.Message.TemplateType isnt 'pug'
-							templateMethod result.text, @options.Message.TemplateData, (err, text) ->
+						if result.text# and data.Message.TemplateType isnt 'pug'
+							templateMethod result.text, data.Message.TemplateData, (err, text) ->
 								callback(err, text)
 						else
-							callback(null, @options.Message.Body.Text.Data)
+							callback(null, data.Message.Body.Text.Data)
 
-				], (err, data) =>
-					@options.Message.Body.Html.Data = data[0]
-					@options.Message.Body.Text.Data = data[1]
+				], (err, result) =>
+
+					data.Message.Body.Html.Data = result[0]
+					data.Message.Body.Text.Data = result[1]
 
 					# strip html if exists on text
-					if /<[a-z][\s\S]*>/.test(@options.Message.Body.Text.Data)
-						@options.Message.Body.Text.Data = htmlToText.fromString(@options.Message.Body.Text.Data)
-
-					callback(err)
+					if /<[a-z][\s\S]*>/.test(data.Message.Body.Text.Data)
+						data.Message.Body.Text.Data = htmlToText.fromString(data.Message.Body.Text.Data)
+					
+					callback(err, data)
 
 		else
-			callback(new TypeError("Unable to define resolve template language #{@options.Message.TemplateType}"))
+			callback(new Error("Unable to define resolve template language #{data.Message.TemplateType}"))
 
 	###*
 	Retrieves the template as a string if a url is given.
@@ -268,31 +371,39 @@ class Email
 	@param {Function} callback callback function
 	@async
 	###
-	_getTemplateString: (callback) ->
+	_getTemplateString: (html, text, callback) ->
+		
+		if not html or not html.length
+			return callback(new Error("Must provide an html template"))
+
+		if not text or not text.length
+			return callback(new Error("Must provide an text template"))
 
 		async.parallel [
 			(callback) =>
-				if @options.Message.Body.Html and isUrl(@options.Message.Body.Html.Data)
-					request @options.Message.Body.Html.Data, (err, response, body) =>
-						if not err and response.statusCode == 200
+				if isUrl(html)
+					
+					request html, (err, response, body) =>
+						if not err and response.statusCode is 200
 							callback(null, body)
 						else
-							callback(new TypeError("Unable location template at #{@options.Message.Body.Html.Data}"))
+							callback(new Error("Unable location template at #{html}"))
 
 				else
-					callback(null, @options.Message.Body.Html.Data)
+					callback(null, html)
 
 			(callback) =>
 
-				if @options.Message.Body.Text and isUrl(@options.Message.Body.Text.Data)
-					request @options.Message.Body.Text.Data, (err, response, body) =>
-						if not err and response.statusCode == 200
+				if isUrl(text)
+					
+					request text, (err, response, body) =>
+						if not err and response.statusCode is 200
 							callback(null, body)
 						else
-							callback(new TypeError("Unable location template at #{@options.Message.Body.Text.Data}"))
+							callback(new Error("Unable location template at #{text}"))
 
 				else
-					callback(null, @options.Message.Body.Text.Data)
+					callback(null, text)
 
 		], (err, result) ->
 			callback(err, {html:result[0], text:result[1]})
@@ -300,34 +411,33 @@ class Email
 
 	###*
 	Retrieves the template language by first looking looking at the extension
-	if a template url if given, then at this.templateType and finally defaults
+	if a template url if given, then at this.templateType and finally default
 	to 'handlebars'.
 
 	@method _getTemplateType
 	@param {String} url url of template
 	###
-	_getTemplateType: (url) ->
+	_getTemplateType: (type) ->
 
+		# check type is a url with an extension
+		if isUrl(type)
 
-		# check if there is an template extension of template file
-		if isUrl(url)
-
-			ext = path.extname(url).replace(".", "")
+			ext = path.extname(type).replace(".", "")
 
 			if ext and Email.TEMPLATE_LANGUGES.indexOf(ext) > -1
 				return ext
 
-		# check if templateType is defined
-		if @options.Message.TemplateType and Email.TEMPLATE_LANGUGES.indexOf(@options.Message.TemplateType) > -1
-			return @options.Message.TemplateType
+		# check if type is defined
+		if Email.TEMPLATE_LANGUGES.indexOf(type) > -1
+			return type
 
 		# check if templateType is defined
-		if @templateType and Email.TEMPLATE_LANGUGES.indexOf(@templateType) > -1
-			return @templateType
+		if @templateType and 
+			Email.TEMPLATE_LANGUGES.indexOf(@templateType) > -1
+				return @templateType
 
 		# default to handlebars
-		else
-			return Email.TEMPLATE_LANGUGES[0]
+		Email.TEMPLATE_LANGUGES[0]
 
 
 	###*

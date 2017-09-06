@@ -18,8 +18,6 @@ _compileScripts = (watch=false) ->
 
 	options = ['-b', '-o', dest, '-c', src]
 	options.unshift('-w') if watch
-	
-	console.log options
 
 	coffee = spawn(X_PATH+'coffee', options)
 

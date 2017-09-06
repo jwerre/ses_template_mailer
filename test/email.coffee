@@ -1,6 +1,7 @@
 fs = require("fs")
 path = require("path")
 should = require("should")
+async = require("async")
 _ = require("lodash")
 Email = require("../src/email")
 
@@ -43,6 +44,18 @@ describe "Email", ->
 		options.Destination.ToAddresses = conf.to
 		options.Message.TemplateData = conf.templateData
 
+	it 'should the correct template type', ->
+		email = new Email(options, credentials)
+		should(email._getTemplateType(null)).equal( Email.TEMPLATE_LANGUGES[0] )
+		should(email._getTemplateType('handlbars')).equal( Email.TEMPLATE_LANGUGES[0] )
+		should(email._getTemplateType('pug')).equal( Email.TEMPLATE_LANGUGES[1] )
+		should(email._getTemplateType('ejs')).equal( Email.TEMPLATE_LANGUGES[2] )
+		should(email._getTemplateType('underscore')).equal( Email.TEMPLATE_LANGUGES[3] )
+		should(email._getTemplateType("https://zyz.com/my-template.invalid")).equal( Email.TEMPLATE_LANGUGES[0] )
+		should(email._getTemplateType("https://zyz.com/my-template.handlebars")).equal( Email.TEMPLATE_LANGUGES[0] )
+		should(email._getTemplateType("https://zyz.com/my-template.pug")).equal( Email.TEMPLATE_LANGUGES[1] )
+		should(email._getTemplateType("https://zyz.com/my-template.ejs")).equal( Email.TEMPLATE_LANGUGES[2] )
+		should(email._getTemplateType("https://zyz.com/my-template.underscore")).equal( Email.TEMPLATE_LANGUGES[3] )
 
 	it "should error because there is no 'Destination'", (done) ->
 		opts = _.cloneDeep(options)
@@ -89,6 +102,7 @@ describe "Email", ->
 			should.not.exist(result)
 			done()
 
+
 	it "should error because there is no 'Message.Body.Html.Data'", (done) ->
 		opts = _.cloneDeep(options)
 		opts.Message.Body.Html.Data = null
@@ -98,7 +112,16 @@ describe "Email", ->
 			should.not.exist(result)
 			done()
 
-	it "should error because there is no 'Message.Body.Html.Data'", (done) ->
+	it "should error because template location could not be found", (done) ->
+		opts = _.cloneDeep(options)
+		opts.Message.Body.Html.Data = "https://zyz.com/not-found.underscore"
+		email = new Email(opts, credentials)
+		email.send (err, result) ->
+			should.exist(err)
+			should.not.exist(result)
+			done()
+
+	it "should error because a pug text template was provided", (done) ->
 		opts = _.cloneDeep(options)
 		opts.Message.TemplateType = 'pug'
 		email = new Email(opts, credentials)
@@ -118,11 +141,11 @@ describe "Email", ->
 		opts = _.cloneDeep(options)
 		opts.Message.Body.Text = null
 		email = new Email(opts, credentials)
-		email.send (err, result) ->
+		email.send (err, result, data) ->
 			should.not.exist(err)
 			should.exist(result)
-			(email.options.Message.Body.Text.Data.length).should.be.above(10)
-			(email.options.Message.Body.Text.Data).should.not.match(/<[a-z][\s\S]*>/)
+			(opts.Message.Body.Text.Data.length).should.be.above(10)
+			(opts.Message.Body.Text.Data).should.not.match(/<[a-z][\s\S]*>/)
 			should.exist(result.ResponseMetadata)
 			should.exist(result.ResponseMetadata.RequestId)
 			done()
@@ -131,12 +154,74 @@ describe "Email", ->
 		opts = _.cloneDeep(options)
 		opts.Message.Body.Html.Data = "https://surveyplanet.com"
 		email = new Email(opts, credentials)
-		email.send (err, result) ->
+		email.send (err, result, data) ->
 			should.not.exist(err)
 			should.exist(result)
 			should.exist(result.ResponseMetadata)
 			should.exist(result.ResponseMetadata.RequestId)
 			done()
+
+
+	it "should send multiple emails", (done) ->
+		opts = _.cloneDeep(options)
+		# set global template data
+		template = opts.Message.Body.Html.Data
+		templateData = opts.Message.templateData
+		opts.Message.Body.Html.Data = null
+		opts.Message.templateData = null
+		
+		multipleOpts = []
+		[1..2].forEach (i) ->
+			multipleOpts.push( _.cloneDeep(options) )
+			
+		email = new Email(multipleOpts, credentials)
+		email.template = template
+		email.templateData = templateData
+		email.send (err, result, data) ->
+			should.not.exist(err)
+			should.exist(result)
+			result.should.be.an.Array()
+			result.should.have.length(multipleOpts.length)
+			result[0].should.have.property('MessageId')
+			result[0].should.have.property('ResponseMetadata')
+			result[0].ResponseMetadata.should.have.property('RequestId')
+
+			data.should.be.an.Array()
+			data.should.have.length(multipleOpts.length)
+			data[0].should.deepEqual(multipleOpts[0])
+			done()
+
+	it.only "should send multiple emails and return events", (done) ->
+		opts = _.cloneDeep(options)
+		multipleOpts = []
+		[1..200].forEach (i) ->
+			multipleOpts.push( _.cloneDeep(options) )
+			
+		email = new Email(multipleOpts, credentials)
+		email.on Email.COMPLETE_EVENT, (errs, results, data) ->
+			should.not.exist(errs)
+			should.exist(results)
+			results.should.be.an.Array()
+			results.should.have.length(multipleOpts.length)
+			results[0].should.have.property('MessageId')
+			results[0].should.have.property('ResponseMetadata')
+			results[0].ResponseMetadata.should.have.property('RequestId')
+			
+			data.should.be.an.Array()
+			data.should.have.length(multipleOpts.length)
+			data[0].should.deepEqual(multipleOpts[0])
+
+			done()
+
+		email.on Email.SEND_EVENT, (result) ->
+			should.exist(result)
+			
+		email.on Email.ERROR_EVENT, (err) ->
+			should.not.exist(err)
+			
+			
+		email.send()
+
 
 	describe "Handlebars", ->
 		
@@ -302,3 +387,7 @@ describe "Email", ->
 				should.exist(result.ResponseMetadata)
 				should.exist(result.ResponseMetadata.RequestId)
 				done()
+	
+	
+	
+	
