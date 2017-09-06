@@ -17,8 +17,7 @@
   },
   "keywords": [
     "email",
-    "transactional email",
-    "ses",
+	"ses",
     "aws",
     "template",
     "tempting",
@@ -27,7 +26,11 @@
     "ejs",
     "underscore",
     "handlebars",
-    "mustache"
+    "mustache",
+	"throttle",
+	"rate limit",
+	"transactional email",
+	"marketing email"
   ],
   "author": "Jonah Werre <jonah@surveyplanet.com> (https://surveyplanet.com)",
   "license": "ISC",
