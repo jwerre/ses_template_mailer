@@ -191,10 +191,10 @@ describe "Email", ->
 			data[0].should.deepEqual(multipleOpts[0])
 			done()
 
-	it.only "should send multiple emails and return events", (done) ->
+	it "should send multiple emails and return events", (done) ->
 		opts = _.cloneDeep(options)
 		multipleOpts = []
-		[1..200].forEach (i) ->
+		[1..3].forEach (i) ->
 			multipleOpts.push( _.cloneDeep(options) )
 			
 		email = new Email(multipleOpts, credentials)
