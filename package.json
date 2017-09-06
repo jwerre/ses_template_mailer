@@ -1,6 +1,6 @@
 {
   "name": "ses-template-mailer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Pug, EJS or Underscore.",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   },
   "keywords": [
     "email",
-	"ses",
+    "ses",
     "aws",
     "template",
     "tempting",
@@ -27,10 +27,10 @@
     "underscore",
     "handlebars",
     "mustache",
-	"throttle",
-	"rate limit",
-	"transactional email",
-	"marketing email"
+    "throttle",
+    "rate limit",
+    "transactional email",
+    "marketing email"
   ],
   "author": "Jonah Werre <jonah@surveyplanet.com> (https://surveyplanet.com)",
   "license": "ISC",
