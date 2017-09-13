@@ -213,7 +213,7 @@ class Email extends EventEmitter
 										
 									else
 										resultCache.push(result)
-										@emit(Email.SEND_EVENT, result)
+										@emit(Email.SEND_EVENT, result, item)
 
 									callback(null, true)
 

@@ -9,14 +9,14 @@ Send HTML or plain text templates through Amazon Web Services Simple Email Servi
 ## Usage
 
 	Email = require('ses-template-mailer')
-	email = new Email(recipient, credentials);
+	email = new Email(options, credentials);
 	email.send(function(error, result){});
 
 ## Options
 
 | Name				| Type					| Description
 | --------------	|-----------------------|------
-| `options`			| Object or [Object]		| Options are the same as [AWS SES sendMail](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SES.html#sendEmail-property) with the following additions. You may also pass an array of multiple email options. Multiple emails will be sent at 90 emails per second. 
+| `options`			| Object or [Object]	| Options are the same as [AWS SES sendMail](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SES.html#sendEmail-property) with the following additions. You may also pass an array of multiple email options. Multiple emails will be sent at 90 emails per second. 
 | `options.Message.TemplateData` | Object	| The data to parse the template with. This can also be set with `email.templateData` before calling send.
 | `options.Message.TemplateType` | String	| The template engine to use. Must be one of the following: "handlebars", "pug", "ejs", "underscore". Handlebars is the default. This can also be set with `email.templateType` before calling send.
 | `options.Message.Body.Html`	 | String	| The text email template. Should either be an html template string or a valid url eg: `https://mybucket.s3.amazonaws.com/template.handlebars`. Using an extension name like "handlebars", "pug", "ejs" or "underscore" will overwrite `TemplateType`.
@@ -26,7 +26,7 @@ Send HTML or plain text templates through Amazon Web Services Simple Email Servi
 
 ## Properties
 
-### `templates` (String)
+### `template` (String)
 
 The text email template. Should either be an html template string or a valid url eg: `https://mybucket.s3.amazonaws.com/template.handlebars`. Using an extension name like "handlebars", "pug", "ejs" or "underscore" will overwrite `TemplateType`.
 

@@ -203,8 +203,11 @@ describe "Email", ->
 			should.exist(results)
 			results.should.be.an.Array()
 			results.should.have.length(multipleOpts.length)
-			results[0].should.have.property('MessageId')
-			results[0].should.have.property('ResponseMetadata')
+			results[0].should.have.properties [
+					'MessageId'
+					'ResponseMetadata'
+				]
+
 			results[0].ResponseMetadata.should.have.property('RequestId')
 			
 			data.should.be.an.Array()
@@ -213,8 +216,17 @@ describe "Email", ->
 
 			done()
 
-		email.on Email.SEND_EVENT, (result) ->
+		email.on Email.SEND_EVENT, (result, data) ->
 			should.exist(result)
+			should.exist(data)
+
+			result.should.have.properties [
+					'MessageId'
+					'ResponseMetadata'
+				]
+			result.ResponseMetadata.should.have.property('RequestId')
+			data.should.have.properties(Object.keys(opts))
+
 			
 		email.on Email.ERROR_EVENT, (err) ->
 			should.not.exist(err)
