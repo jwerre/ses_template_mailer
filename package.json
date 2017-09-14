@@ -33,7 +33,7 @@
     "marketing email"
   ],
   "author": "Jonah Werre <jonah@surveyplanet.com> (https://surveyplanet.com)",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "async": "^2.4.1",
     "aws-sdk": "^2.62.0",

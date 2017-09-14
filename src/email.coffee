@@ -247,10 +247,11 @@ class Email extends EventEmitter
 
 					if err
 						@emit(Email.ERROR_EVENT, err)
+						err = [err]
 					else
 						@emit(Email.SEND_EVENT, result, @data[0])
 
-					@emit(Email.COMPLETE_EVENT)
+					@emit(Email.COMPLETE_EVENT, err, [result], @data)
 
 		
 
