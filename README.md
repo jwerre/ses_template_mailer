@@ -1,3 +1,7 @@
+# DEPRECATED
+
+Use AWS [CreateTemplate API](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-personalized-email-api.html) instead.
+
 # AWS Simple Email Service (SES) Template Mailer
 
 Send HTML or plain text templates through Amazon Web Services Simple Email Service (SES) using Handlebars, Pug, EJS or Underscore. This is essentially a wrapper for [ses.sendEmail](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SES.html#sendEmail-property).
